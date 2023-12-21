@@ -1,13 +1,12 @@
-import React from 'react'
-import Projects from '../../components/Projects/index'
+import React from "react";
+import Projects from "../../components/Projects/index";
 
 const ProjectsContainer = () => {
- 
   const data = [
     {
       name: "RecipeHub",
       description: "MERN based Recipe Manager",
-      link: "https://nextjs-mern-recipehub.vercel.app",
+      link: "https://recipe--hub.vercel.app",
     },
     {
       name: "Crypto tracker",
@@ -49,7 +48,7 @@ const ProjectsContainer = () => {
     },
   ];
 
-  return <Projects data={data} />
-}
+  return <Projects data={data} />;
+};
 
-export default ProjectsContainer
+export default ProjectsContainer;
