@@ -20,7 +20,10 @@ import './index.css'
 
 function App() {
   const [loading, setLoading] = useState(true)
-  const [darkMode, setDarkMode] = useState(true)
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode')
+    return saved !== null ? saved === 'true' : true
+  })
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 2500)
@@ -33,6 +36,11 @@ function App() {
     } else {
       document.documentElement.classList.remove('dark')
     }
+  }, [darkMode])
+
+  // Persist preference
+  useEffect(() => {
+    localStorage.setItem('darkMode', darkMode)
   }, [darkMode])
 
   if (loading) return <LoadingScreen />

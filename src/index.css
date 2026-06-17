@@ -398,6 +398,136 @@
   50%       { box-shadow: 0 0 14px rgba(0, 212, 255, 0.9), 0 0 28px rgba(0, 212, 255, 0.35); }
 }
 
+/* ===================== LIGHT MODE OVERRIDES ===================== */
+
+html:not(.dark) body {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+/* ---- Text color overrides ---- */
+html:not(.dark) .text-white  { color: #1e293b !important; }
+html:not(.dark) .text-gray-300 { color: #374151 !important; }
+html:not(.dark) .text-gray-400 { color: #4b5563 !important; }
+html:not(.dark) .text-gray-500 { color: #6b7280 !important; }
+html:not(.dark) .text-gray-600 { color: #6b7280 !important; }
+html:not(.dark) p, html:not(.dark) span:not([class*="text-primary"]):not([class*="gradient-text"]):not([class*="text-secondary"]) {
+  color: inherit;
+}
+
+/* ---- Glass cards → white cards ---- */
+html:not(.dark) .glass {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  backdrop-filter: blur(12px);
+}
+
+html:not(.dark) .glass-dark {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ---- Navbar ---- */
+html:not(.dark) nav {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ---- Section backgrounds ---- */
+html:not(.dark) .bg-dark-200\/30,
+html:not(.dark) [class*="bg-dark"] {
+  background: rgba(241, 245, 249, 0.6) !important;
+}
+
+/* ---- Card borders ---- */
+html:not(.dark) [class*="border-white\/5"],
+html:not(.dark) [class*="border-white\/10"] {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ---- Footer ---- */
+html:not(.dark) footer {
+  background: rgba(248, 250, 252, 0.95) !important;
+  border-top-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ---- Input fields ---- */
+html:not(.dark) input,
+html:not(.dark) textarea {
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: #1e293b !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+html:not(.dark) input::placeholder,
+html:not(.dark) textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* ---- Scrollbar ---- */
+html:not(.dark) ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+/* ---- Mobile menu ---- */
+html:not(.dark) .lg\:hidden.glass-dark {
+  background: rgba(255, 255, 255, 0.97) !important;
+}
+
+/* ---- Hover states for nav links ---- */
+html:not(.dark) a.text-gray-400:hover {
+  color: #1e293b !important;
+}
+
+/* ---- Background mesh: boost visibility on light ---- */
+html:not(.dark) .bg-mesh {
+  background-image:
+    radial-gradient(at 40% 20%, rgba(108, 99, 255, 0.12) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, rgba(0, 212, 255, 0.1) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, rgba(255, 107, 157, 0.1) 0px, transparent 50%);
+}
+
+/* ---- Particle canvas: lower opacity on light ---- */
+html:not(.dark) #particle-canvas {
+  opacity: 0.35;
+}
+
+/* ---- Keep gradient text visible ---- */
+html:not(.dark) .gradient-text,
+html:not(.dark) .shimmer-text {
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* ---- Blog / Project cards text ---- */
+html:not(.dark) h1,
+html:not(.dark) h2,
+html:not(.dark) h3,
+html:not(.dark) h4,
+html:not(.dark) h5 {
+  color: #0f172a;
+}
+
+/* ---- Tag pills ---- */
+html:not(.dark) .bg-primary\/10 {
+  background: rgba(108, 99, 255, 0.1) !important;
+}
+
+html:not(.dark) .bg-white\/5 {
+  background: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* ---- Timeline and border lines ---- */
+html:not(.dark) [class*="border-white"] {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ---- btn-secondary on light ---- */
+html:not(.dark) .btn-secondary {
+  color: #6C63FF !important;
+  border-color: rgba(108, 99, 255, 0.4) !important;
+  background: rgba(108, 99, 255, 0.06) !important;
+}
+
 /* Prefers reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,
