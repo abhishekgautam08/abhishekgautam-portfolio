@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { FiDownload, FiMapPin, FiMail, FiPhone } from 'react-icons/fi'
 import SectionHeader from '../components/SectionHeader'
-import { personalInfo, stats, education, experience } from '../data/portfolioData'
+import { personalInfo, education, experience } from '../data/portfolioData'
 
 export default function About() {
   return (
@@ -40,21 +40,6 @@ export default function About() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mt-6">
-                {stats.map((s, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.1 }}
-                    className="glass rounded-xl p-4 text-center border border-white/5"
-                  >
-                    <div className="text-2xl font-black gradient-text">{s.value}{s.suffix}</div>
-                    <p className="text-gray-400 text-xs mt-1">{s.label}</p>
-                  </motion.div>
-                ))}
-              </div>
             </motion.div>
 
             <motion.div
@@ -77,7 +62,6 @@ export default function About() {
                   { label: 'Email', value: personalInfo.email, icon: <FiMail /> },
                   { label: 'Phone', value: personalInfo.phone, icon: <FiPhone /> },
                   { label: 'Location', value: personalInfo.location, icon: <FiMapPin /> },
-                  { label: 'Availability', value: personalInfo.availability },
                 ].map((item, i) => (
                   <div key={i} className="glass rounded-xl p-3 border border-white/5">
                     <p className="text-xs text-gray-500 mb-1">{item.label}</p>
@@ -90,7 +74,7 @@ export default function About() {
               </div>
 
               <a
-                href="/resume.pdf"
+                href="https://drive.google.com/file/d/1Z_BTMgBt8LwoBFfIFMiSsA3cq1BAtwK_/view?usp=sharing"
                 download
                 className="btn-primary inline-flex items-center gap-2"
               >

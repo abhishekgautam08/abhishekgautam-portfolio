@@ -25,8 +25,6 @@ export default function Footer() {
               {[
                 { icon: <FiGithub />, href: personalInfo.github },
                 { icon: <FiLinkedin />, href: personalInfo.linkedin },
-                { icon: <FiTwitter />, href: personalInfo.twitter },
-                { icon: <FiMail />, href: `mailto:${personalInfo.email}` },
               ].map((s, i) => (
                 <motion.a
                   key={i}
@@ -59,7 +57,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          <div>
+          {/* <div>
             <h4 className="font-semibold text-white mb-4">Services</h4>
             <ul className="space-y-2">
               {services.map(s => (
@@ -69,12 +67,12 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
-          </div>
+          </div> */}
 
           <div>
-            <h4 className="font-semibold text-white mb-4">Newsletter</h4>
-            <p className="text-gray-400 text-sm mb-4">Subscribe for latest articles and updates.</p>
-            <div className="flex gap-2">
+            {/* <h4 className="font-semibold text-white mb-4">Newsletter</h4> */}
+            {/* <p className="text-gray-400 text-sm mb-4">Subscribe for latest articles and updates.</p> */}
+            {/* <div className="flex gap-2">
               <input
                 type="email"
                 placeholder="Your email"
@@ -83,11 +81,11 @@ export default function Footer() {
               <button className="btn-primary px-4 py-2 text-sm">
                 <span>Go</span>
               </button>
-            </div>
+            </div> */}
             <div className="mt-6 p-3 rounded-lg glass border border-white/5">
               <p className="text-gray-400 text-xs">{personalInfo.email}</p>
               <p className="text-gray-400 text-xs mt-1">{personalInfo.location}</p>
-              <p className="text-gray-400 text-xs mt-1">Available: {personalInfo.availability}</p>
+              {/* <p className="text-gray-400 text-xs mt-1">Available: {personalInfo.availability}</p> */}
             </div>
           </div>
         </div>

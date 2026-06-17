@@ -1,10 +1,8 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { FiGithub, FiLinkedin, FiTwitter, FiMail, FiDownload, FiArrowRight } from 'react-icons/fi'
-import CountUp from 'react-countup'
-import { useInView } from 'react-intersection-observer'
 import TypeWriter from '../components/TypeWriter'
-import { personalInfo, stats, typingTexts, projects, skills } from '../data/portfolioData'
+import { personalInfo, typingTexts, projects, skills } from '../data/portfolioData'
 
 const fadeUp = {
   initial: { opacity: 0, y: 60 },
@@ -13,8 +11,6 @@ const fadeUp = {
 }
 
 export default function Home() {
-  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.3 })
-
   return (
     <div className="relative z-10">
       {/* Hero */}
@@ -26,16 +22,6 @@ export default function Home() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-primary/30 mb-6"
-              >
-                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                <span className="text-sm text-gray-300">Available for Work</span>
-              </motion.div>
-
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -73,17 +59,12 @@ export default function Home() {
                 transition={{ delay: 0.7 }}
                 className="flex flex-wrap gap-4 mb-8"
               >
-                <Link to="/contact" className="btn-primary flex items-center gap-2">
-                  <span className="flex items-center gap-2">
-                    Hire Me <FiArrowRight />
-                  </span>
-                </Link>
                 <a
-                  href="/resume.pdf"
+                  href="https://drive.google.com/file/d/1Z_BTMgBt8LwoBFfIFMiSsA3cq1BAtwK_/view?usp=sharing"
                   download
                   className="btn-secondary flex items-center gap-2"
                 >
-                  <FiDownload /> Download CV
+                  <FiDownload /> Download Resume
                 </a>
               </motion.div>
 
@@ -96,8 +77,6 @@ export default function Home() {
                 {[
                   { icon: <FiGithub />, href: personalInfo.github },
                   { icon: <FiLinkedin />, href: personalInfo.linkedin },
-                  { icon: <FiTwitter />, href: personalInfo.twitter },
-                  { icon: <FiMail />, href: `mailto:${personalInfo.email}` },
                 ].map((s, i) => (
                   <motion.a
                     key={i}
@@ -154,29 +133,6 @@ export default function Home() {
             </motion.div>
           </div>
 
-          {/* Stats */}
-          <motion.div
-            ref={ref}
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9, duration: 0.6 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-20"
-          >
-            {stats.map((stat, i) => (
-              <motion.div
-                key={i}
-                whileHover={{ scale: 1.05 }}
-                className="glass rounded-2xl p-6 text-center border border-white/5 card-hover"
-              >
-                <div className="text-4xl font-black gradient-text mb-2">
-                  {inView ? (
-                    <CountUp end={stat.value} duration={2} suffix={stat.suffix} />
-                  ) : '0'}
-                </div>
-                <p className="text-gray-400 text-sm">{stat.label}</p>
-              </motion.div>
-            ))}
-          </motion.div>
         </div>
       </section>
 

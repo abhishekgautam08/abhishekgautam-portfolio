@@ -60,24 +60,12 @@ export default function Skills() {
                 transition={{ delay: i * 0.05 }}
                 className="glass rounded-xl p-5 border border-white/5 hover:border-primary/20 transition-colors"
               >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-                      style={{ background: skill.color + '22' }}>
-                      <span style={{ color: skill.color }}>◆</span>
-                    </div>
-                    <span className="font-semibold text-white">{skill.name}</span>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
+                    style={{ background: skill.color + '22' }}>
+                    <span style={{ color: skill.color }}>◆</span>
                   </div>
-                  <span className="text-sm font-bold" style={{ color: skill.color }}>{skill.level}%</span>
-                </div>
-                <div className="h-2 bg-dark-200 rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${skill.level}%` }}
-                    transition={{ duration: 1, delay: i * 0.05 + 0.2, ease: 'easeOut' }}
-                    className="h-full rounded-full progress-bar"
-                    style={{ background: `linear-gradient(90deg, ${skill.color}, ${skill.color}99)` }}
-                  />
+                  <span className="font-semibold text-white">{skill.name}</span>
                 </div>
               </motion.div>
             ))}

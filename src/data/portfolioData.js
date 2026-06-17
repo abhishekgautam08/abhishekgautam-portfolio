@@ -343,6 +343,21 @@ export const blogs = [
     image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80',
     category: 'Architecture',
     color: '#6C63FF',
+    content: `When I joined Vivasvat as the sole developer, I inherited three separate fintech products — a loan management dashboard, a KYC portal, and an admin console. All three had their own React codebases, their own deployments, and if we needed to change something in the shared header, we'd update it in three places. Every release was a coordination nightmare.
+
+I'd heard of micro-frontends before but always assumed they were a "big team" problem. Turns out they're a "shared code across products" problem, which is exactly what I had.
+
+The first thing I did was audit what was actually shared. Turns out roughly 40% of each app was identical — the auth flow, the navigation shell, the design system components, the API client. That 40% was being copy-pasted and drifting out of sync across products. One app had a bug fix that the other two didn't.
+
+I chose Vite Module Federation over Webpack because our builds were already on Vite and I didn't want to introduce a second bundler. The mental model is simple: one app is the "host" (the shell that loads at the URL root), and other apps are "remotes" that expose specific components or even full pages. The host imports them at runtime, not at build time.
+
+The trickiest part wasn't the Vite config — it was shared state. When the user logs in on the host, the auth token needs to be available to every remote. You can't just use React Context across module boundaries because each remote is a separate bundle with its own React instance. I ended up storing the token in localStorage and writing a tiny event-based sync layer (a custom window event + a hook) so remotes could react to auth changes without coupling to the host's internals.
+
+Another gotcha: shared dependencies. If both the host and a remote bundle their own copy of React, you'll get "Invalid hook call" errors because React checks for a single instance via module identity. You have to declare shared libraries in the federation config with 'singleton: true' and matching version ranges. I got burned by this on the first deploy when react-router-dom wasn't listed as shared and both bundles loaded their own router, creating a duplicate context that broke navigation.
+
+After two sprints of setup work, the result was worth it. Each product team (well, just me — but the principle held) could deploy independently. A hotfix to the KYC portal didn't require a re-release of the loan dashboard. CI pipelines ran in parallel for each remote. And the shared design system lived in one repo, one source of truth, deployed to a CDN and consumed by all three apps via the federation config.
+
+If I were starting from scratch, I'd do it again. But I'd also document the shared dependency list from day one, because that's the thing that will bite you silently in production.`,
   },
   {
     id: 2,
@@ -354,6 +369,21 @@ export const blogs = [
     image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&q=80',
     category: 'Backend',
     color: '#00D4FF',
+    content: `When we started onboarding enterprise clients at Vivasvat, the original design was one MongoDB database per client. Clean isolation, no shared infrastructure risk. On paper it looked sensible. In practice, adding a new client meant spinning up a new Atlas cluster, running migrations, seeding config data, updating environment variables in four places, and then testing everything end-to-end. That process took 2–3 days and involved a checklist that was, embarrassingly, a Notion page that only I maintained.
+
+I knew this wouldn't scale. So I sat down and designed a proper multi-tenant schema on a single shared cluster.
+
+The core idea is a tenantId field on every document. Every collection — users, transactions, documents, audit logs — carries this field. Every query filters by it. This sounds obvious, but the discipline required to enforce it consistently is where most implementations fall apart. If one developer writes a query without the tenantId filter, one client can potentially see another's data. That's a catastrophic bug in fintech.
+
+My solution was a middleware layer at the Mongoose level. I extended the base model to automatically inject tenantId into every find, update, and delete operation. The controller never has to think about it — it comes from the authenticated request context (extracted from the JWT) and is applied at the query layer. If you somehow forget to pass it, the middleware throws before the query executes.
+
+For indexing, every high-traffic collection gets a compound index on { tenantId: 1, createdAt: -1 } at minimum, plus whatever field is used in the primary filter. Without this, a query for "all transactions for tenant X in the last 30 days" does a full collection scan across every tenant's data. With the compound index, MongoDB can jump straight to tenant X's partition of the index. Our slowest queries went from 800ms to under 100ms after adding proper compound indexes.
+
+We also use separate S3 prefixes per tenant for file storage and separate KMS key aliases for encryption at rest. This way even if the database layer somehow shared data, the encryption keys are still per-tenant.
+
+Provisioning a new client now takes under 4 hours — most of that is onboarding paperwork, not technical setup. The technical part is a single script that creates the tenant record, seeds the config data, and sets up the S3 prefix. No new infrastructure. No new deployment. That's the real win.
+
+One thing I'd warn anyone about: audit logging. In a multi-tenant system, you need an immutable audit log that records who did what, on whose data, at what time. We write every write operation to a separate audit collection that no application code can update or delete. It's been useful twice already when a client disputed a transaction state.`,
   },
   {
     id: 3,
@@ -365,6 +395,19 @@ export const blogs = [
     image: 'https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=800&q=80',
     category: 'AI',
     color: '#FF6B9D',
+    content: `I want to be honest upfront: I was skeptical about putting an LLM in the critical path of customer support for a fintech product. Users asking about their loan status or KYC rejection reasons need accurate, consistent answers — not creative ones. One hallucinated response about a transaction could cause real harm.
+
+What changed my mind was scoping it correctly. The service doesn't answer arbitrary questions. It answers questions from a fixed knowledge base — our product FAQs, common KYC failure reasons, loan eligibility criteria, document upload instructions. GPT-4 is really good at retrieval and reformulation, which is what you need for support. The trick is constraining the model so it doesn't venture outside that scope.
+
+The architecture is straightforward. A Node.js Express service exposes a single POST endpoint. The client sends a user message and a product identifier (which product they're using). The service retrieves the relevant knowledge base documents for that product from a simple JSON store, constructs a system prompt that establishes the assistant's role and strictly limits it to the provided context, then sends the conversation to the OpenAI chat completions API and streams the response back.
+
+The system prompt is where most of the reliability work happens. I added explicit instructions like: "If the answer is not in the context below, say 'I don't have that information — please contact our support team directly.' Do not speculate." Combined with 'temperature: 0' for consistency, the hallucination rate dropped to effectively zero in our testing.
+
+For the three products consuming this service, integration was a single API call. No LLM code in the product repos. When I upgraded from GPT-3.5 to GPT-4 for better accuracy, I updated one service and all three products got the improvement automatically. That's the micro-service dividend.
+
+Rate limiting was important for cost control. I added per-tenant request limits using Redis counters — each tenant gets 500 AI queries per day before getting a polite "limit reached" response. This kept our OpenAI bill predictable and prevented any single client from chewing through the quota.
+
+The one thing I'd do differently: structured output. I'm currently parsing the model's free-text response on the client side. If I were building this today, I'd use OpenAI's 'response_format: { type: "json_object" }' and define a schema — '{ answer: string, confidence: "high" | "medium" | "low", escalate: boolean }' — so the client knows whether to offer a human handoff. That would make the low-confidence cases much more graceful.`,
   },
   {
     id: 4,
@@ -376,6 +419,19 @@ export const blogs = [
     image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80',
     category: 'Cloud',
     color: '#6C63FF',
+    content: `Cloud bills have a way of growing quietly. You add a service, it works, you move on. Six months later you look at the AWS Cost Explorer and wonder when you started running a t3.xlarge for a service that averages 2 requests per minute.
+
+That's roughly what I found when I finally did a proper infrastructure audit at Vivasvat. We weren't burning money — but we were paying for capacity we weren't using, and fixing it turned out to be a single focused sprint.
+
+The biggest win was EC2 right-sizing. We had four services on t3.xlarge instances. I pulled CPU and memory utilisation metrics from CloudWatch across a 30-day window and found that three of the four never exceeded 15% CPU and 30% memory at peak. Moved them to t3.medium. That alone was about 60% of the eventual savings.
+
+The Lambda cold start issue was more subtle. We had a document processing Lambda that users would trigger after uploading a file — and about 20% of the time, the first invocation after a quiet period would take 4–6 seconds because the function was starting cold. This was a Node.js Lambda with a fat dependency bundle (Puppeteer). Two fixes: I set a provisioned concurrency of 1 for this function (keeping one instance warm at all times), and I trimmed the bundle by moving Puppeteer to a Lambda Layer shared with other functions. Cold starts went from 4–6 seconds to under 800ms for the occasional cold hit, and warm invocations stayed under 200ms.
+
+The ElastiCache decision was slightly different — it wasn't about cost reduction, it was about cost reallocation. We were making the same MongoDB queries repeatedly for configuration data that changed maybe once a week. Adding Redis via ElastiCache moved those reads off the database, reduced our Atlas compute tier by one level, and the ElastiCache cost was lower than what we saved on Atlas. Net positive.
+
+One thing I did that I'd recommend to anyone: tag everything. Every resource — EC2, Lambda, S3 bucket, ElastiCache cluster — gets tags for 'service', 'environment', and 'team'. AWS Cost Explorer can break down spend by tag, so you can see exactly which service or environment is responsible for what percentage of your bill. Before tagging, cost attribution was guesswork. After, it was a 5-minute report.
+
+The honest lesson from all of this: infrastructure audits should be scheduled, not reactive. I found this stuff because I had a slow week. I should have found it months earlier.`,
   },
   {
     id: 5,
@@ -387,6 +443,19 @@ export const blogs = [
     image: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&q=80',
     category: 'Fintech',
     color: '#00D4FF',
+    content: `Before I built the automated KYC flow, here's how user onboarding worked: the user submitted their Aadhaar number and PAN card photo, a support agent manually looked it up in the government portal, cross-checked the details against what the user had entered, and approved or rejected the application. Turnaround was 24–48 hours. On weekends it could stretch to 72.
+
+For a fintech product where users sign up because they need access to something urgently — a loan, a payment account — making them wait two days is a conversion killer. We were losing users at the KYC step.
+
+The Singzy API provides programmatic access to Aadhaar OTP verification and PAN validation against government databases. The integration itself isn't technically complex — it's a few REST calls — but there are important edge cases and UX decisions that make or break the experience.
+
+The Aadhaar flow uses OTP consent: the user enters their Aadhaar number, Singzy triggers an OTP to their registered mobile via UIDAI, the user enters the OTP, and Singzy returns verified identity data. The key implementation detail is that you must not store the Aadhaar number itself after verification — regulations prohibit it. You store a tokenised reference and the verified name/DOB/address. I used AWS KMS to encrypt even that reference at the field level in MongoDB.
+
+PAN validation is simpler: send the PAN number and name, get back a match score. I treat anything above 85% as a pass (handles minor name discrepancies between Aadhaar and PAN like "Abhishek" vs "ABHISHEK"). Below 70% is an automatic fail with a clear rejection message. The 70–85% range goes to a lightweight manual review queue — it's a small percentage but worth catching rather than auto-approving.
+
+The retry logic took some thought. UIDAI OTP delivery can be slow, especially on certain networks. I implemented a 60-second resend timer with a maximum of 3 resend attempts before the session expires and the user has to restart. I also store the Aadhaar verification attempt state in Redis with a 10-minute TTL so users can close the browser and come back without losing their place.
+
+After going live, KYC approval time dropped from 24–48 hours to under 3 minutes for the happy path. Manual review volume dropped by about 85%. The support team now handles only edge cases — foreign nationals, name mismatch disputes, and the occasional government API downtime. That last one matters: I added a fallback flag in the config that switches back to the manual queue automatically if Singzy's API returns errors above a threshold.`,
   },
   {
     id: 6,
@@ -398,5 +467,20 @@ export const blogs = [
     image: 'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=800&q=80',
     category: 'Backend',
     color: '#FF6B9D',
+    content: `At Chikitsa, every patient visit ends with a prescription. Before I joined, prescriptions were being typed up in Google Docs, exported manually, and sent via WhatsApp by a staff member. On busy days, patients would wait 30–45 minutes after their appointment for their prescription to arrive. The doctors hated it. The patients definitely hated it.
+
+The solution was a PDF generation service that runs automatically when a doctor marks a consultation as complete. Within 60 seconds of the consultation ending, the patient receives their prescription on WhatsApp.
+
+I chose Puppeteer over alternatives like PDFKit or wkhtmltopdf because the prescription format is complex — it mirrors the clinic's printed letterhead with custom fonts, a watermark, a QR code linking to a digital record, and a signature block. Maintaining that as programmatic drawing commands (PDFKit) would be brittle. With Puppeteer, I write HTML/CSS and the output is pixel-perfect to the paper format.
+
+The first version had a serious problem: Puppeteer launches a full Chromium browser instance per request. At 50 documents in a burst (post-morning OPD), we were spawning 50 browser instances simultaneously, each consuming ~150MB of RAM. The Lambda function ran out of memory and started crashing silently.
+
+The fix was a browser pool. I use 'puppeteer-cluster' to maintain a fixed pool of 3 Chromium instances that handle requests concurrently. Each page is created fresh per document, the PDF is generated, and the page is closed — but the browser instance stays alive and handles the next request in the queue. Peak RAM usage dropped from 7GB+ to under 500MB. Generation time for a burst of 50 documents went from crashing to completing in about 90 seconds.
+
+For the WhatsApp delivery, we use the WhatsApp Business API via a third-party provider. The PDF is first uploaded to S3, then the S3 signed URL is sent as a document message via the WhatsApp API. The signature URL expires after 1 hour for security. If the WhatsApp delivery fails (phone offline, etc.), the system retries three times with exponential backoff and then falls back to sending an SMS with a web link to the PDF.
+
+One thing I did that made debugging much easier: every generated PDF is stored permanently in S3 with a path keyed by appointment ID. If a patient calls saying they didn't receive their prescription, we can immediately re-send from the stored copy without regenerating. We log every generation event — duration, file size, delivery status — to MongoDB, so I can spot if generation times start spiking (usually means a template change introduced a slow asset load).
+
+Processing 1,000+ documents a month with zero manual intervention now. The staff member who used to spend 3 hours a day sending prescriptions now handles actual patient coordination. That's the best outcome.`,
   },
 ];

@@ -1,13 +1,14 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { FiClock, FiArrowRight, FiTag } from 'react-icons/fi'
+import { motion, AnimatePresence } from 'framer-motion'
+import { FiClock, FiArrowRight, FiTag, FiX, FiCalendar } from 'react-icons/fi'
 import SectionHeader from '../components/SectionHeader'
 import { blogs } from '../data/portfolioData'
 
-const categories = ['All', 'Frontend', 'Full Stack', 'Blockchain', 'Cloud', 'Backend', 'AI']
+const categories = ['All', 'Architecture', 'Backend', 'AI', 'Cloud', 'Fintech']
 
 export default function Blog() {
   const [filter, setFilter] = useState('All')
+  const [selected, setSelected] = useState(null)
 
   const filtered = filter === 'All' ? blogs : blogs.filter(b => b.category === filter)
 
@@ -62,7 +63,7 @@ export default function Blog() {
                 </div>
                 <div className="p-5">
                   <div className="flex items-center gap-3 text-xs text-gray-500 mb-3">
-                    <span>{blog.date}</span>
+                    <span className="flex items-center gap-1"><FiCalendar /> {blog.date}</span>
                     <span>•</span>
                     <span className="flex items-center gap-1"><FiClock /> {blog.readTime}</span>
                   </div>
@@ -77,26 +78,109 @@ export default function Blog() {
                       </span>
                     ))}
                   </div>
-                  <button className="text-sm flex items-center gap-1 text-primary hover:gap-2 transition-all font-medium">
+                  <button
+                    onClick={() => setSelected(blog)}
+                    className="text-sm flex items-center gap-1 text-primary hover:gap-2 transition-all font-medium"
+                  >
                     Read More <FiArrowRight />
                   </button>
                 </div>
               </motion.article>
             ))}
           </div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mt-12"
-          >
-            <button className="btn-secondary px-8 py-3 flex items-center gap-2 mx-auto">
-              View All Articles <FiArrowRight />
-            </button>
-          </motion.div>
         </div>
       </section>
+
+      {/* Blog Modal */}
+      <AnimatePresence>
+        {selected && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-start justify-center p-4 md:p-8 bg-black/80 backdrop-blur-sm overflow-y-auto"
+            onClick={() => setSelected(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 40, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 40, scale: 0.95 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              onClick={e => e.stopPropagation()}
+              className="relative w-full max-w-3xl bg-dark-300 rounded-3xl border border-white/10 overflow-hidden my-4"
+            >
+              {/* Hero image */}
+              <div className="relative h-56 overflow-hidden">
+                <img
+                  src={selected.image}
+                  alt={selected.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-dark-300 via-dark-300/40 to-transparent" />
+                <button
+                  onClick={() => setSelected(null)}
+                  className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/50 border border-white/20 flex items-center justify-center text-white hover:bg-black/70 transition-colors"
+                >
+                  <FiX />
+                </button>
+                <div className="absolute bottom-4 left-6">
+                  <span className="px-3 py-1 rounded-full text-xs font-semibold"
+                    style={{ background: selected.color + '33', color: selected.color, border: `1px solid ${selected.color}44` }}>
+                    {selected.category}
+                  </span>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 md:p-8">
+                <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
+                  <span className="flex items-center gap-1"><FiCalendar /> {selected.date}</span>
+                  <span>•</span>
+                  <span className="flex items-center gap-1"><FiClock /> {selected.readTime}</span>
+                </div>
+
+                <h2 className="text-2xl md:text-3xl font-bold text-white mb-4 leading-snug">
+                  {selected.title}
+                </h2>
+
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {selected.tags.map(tag => (
+                    <span key={tag} className="flex items-center gap-1 text-xs text-gray-400 px-2 py-1 rounded bg-white/5 border border-white/10">
+                      <FiTag className="text-primary" /> {tag}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="prose prose-invert max-w-none">
+                  {selected.content.split('\n\n').map((para, i) => (
+                    <p key={i} className="text-gray-300 leading-relaxed mb-5 text-sm md:text-base">
+                      {para}
+                    </p>
+                  ))}
+                </div>
+
+                <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-sm">
+                      AG
+                    </div>
+                    <div>
+                      <p className="text-white text-sm font-semibold">Abhishek Gautam</p>
+                      <p className="text-gray-500 text-xs">Full Stack Developer</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSelected(null)}
+                    className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1"
+                  >
+                    <FiX /> Close
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

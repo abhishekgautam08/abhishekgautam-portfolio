@@ -89,8 +89,6 @@ export default function Contact() {
                   {[
                     { icon: <FiGithub />, href: personalInfo.github, label: 'GitHub' },
                     { icon: <FiLinkedin />, href: personalInfo.linkedin, label: 'LinkedIn' },
-                    { icon: <FiTwitter />, href: personalInfo.twitter, label: 'Twitter' },
-                    { icon: <FiMail />, href: `mailto:${personalInfo.email}`, label: 'Email' },
                   ].map((s, i) => (
                     <motion.a
                       key={i}
