@@ -3,7 +3,9 @@ import { motion } from 'framer-motion'
 import { FiGithub, FiLinkedin, FiHeart, FiMail, FiMapPin } from 'react-icons/fi'
 import { personalInfo } from '../data/portfolioData'
 
-const quickLinks = ['Home', 'About', 'Skills', 'Projects', 'Services', 'Blog', 'Contact']
+const quickLinks = ['Home', 'About', 'Skills', 
+  // 'Projects',
+   'Services', 'Blog', 'Contact']
 
 const socialLinks = [
   { icon: <FiGithub size={16} />, href: personalInfo.github, label: 'GitHub' },

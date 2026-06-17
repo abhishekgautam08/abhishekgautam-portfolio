@@ -127,7 +127,8 @@ export default function About() {
 
               <motion.a
                 href="https://drive.google.com/file/d/1Z_BTMgBt8LwoBFfIFMiSsA3cq1BAtwK_/view?usp=sharing"
-                download
+                target="_blank"
+                rel="noreferrer"
                 whileHover={{ scale: 1.04, y: -2 }}
                 whileTap={{ scale: 0.97 }}
                 className="btn-primary inline-flex items-center gap-2 magnetic-btn"
