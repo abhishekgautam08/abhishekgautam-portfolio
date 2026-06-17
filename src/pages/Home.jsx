@@ -134,7 +134,7 @@ export default function Home() {
                   transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
                   className="absolute inset-0 rounded-full border-2 border-dashed border-primary/20"
                 />
-                {['React', 'Node.js', 'Web3', 'AI'].map((tech, i) => {
+                {['React', 'Node.js', 'AWS', 'AI'].map((tech, i) => {
                   const angle = (i * 90 * Math.PI) / 180
                   const x = 50 + 50 * Math.cos(angle)
                   const y = 50 + 50 * Math.sin(angle)
@@ -261,10 +261,10 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Technologies I <span className="gradient-text">Work With</span>
             </h2>
-            <p className="text-gray-400">My technical stack across frontend, backend, and blockchain</p>
+            <p className="text-gray-400">My technical stack across frontend, backend, cloud, and AI</p>
           </motion.div>
           <div className="flex flex-wrap justify-center gap-3">
-            {[...skills.frontend, ...skills.backend, ...skills.blockchain].map((skill, i) => (
+            {[...skills.frontend, ...skills.backend, ...skills.ai].map((skill, i) => (
               <motion.div
                 key={skill.name}
                 initial={{ opacity: 0, scale: 0.8 }}

@@ -8,7 +8,7 @@ const categories = [
   { key: 'backend', label: 'Backend', emoji: '⚙️' },
   { key: 'database', label: 'Database', emoji: '🗄️' },
   { key: 'cloud', label: 'Cloud & DevOps', emoji: '☁️' },
-  { key: 'blockchain', label: 'Blockchain', emoji: '⛓️' },
+  { key: 'ai', label: 'AI & Scripting', emoji: '🤖' },
   { key: 'tools', label: 'Tools', emoji: '🛠️' },
 ]
 

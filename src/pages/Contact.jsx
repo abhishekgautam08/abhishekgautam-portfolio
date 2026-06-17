@@ -116,7 +116,7 @@ export default function Contact() {
               >
                 <div className="text-center text-gray-500">
                   <FiMapPin className="text-4xl text-primary mx-auto mb-2" />
-                  <p className="text-sm">India 🇮🇳</p>
+                  <p className="text-sm">Jaipur, Rajasthan 🇮🇳</p>
                   <p className="text-xs text-gray-600 mt-1">Available for remote work worldwide</p>
                 </div>
               </motion.div>
