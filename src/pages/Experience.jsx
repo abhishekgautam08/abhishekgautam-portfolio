@@ -2,6 +2,15 @@ import { motion } from 'framer-motion'
 import SectionHeader from '../components/SectionHeader'
 import { experience, education } from '../data/portfolioData'
 
+const achievements = [
+  { icon: '💰', text: 'Managed $2M+ in blockchain transactions' },
+  { icon: '👥', text: 'Served 100K+ users across multiple platforms' },
+  { icon: '⭐', text: 'Maintained 5-star rating on freelance platforms' },
+  { icon: '🚀', text: 'Reduced deployment time by 80% with CI/CD' },
+  { icon: '📈', text: 'Improved app performance by 60%' },
+  { icon: '🌍', text: 'Delivered projects to 10+ countries' },
+]
+
 export default function Experience() {
   return (
     <div className="relative z-10 pt-20">
@@ -14,14 +23,26 @@ export default function Experience() {
           />
 
           <div className="grid lg:grid-cols-2 gap-16 mb-20">
-            {/* Work Experience */}
+            {/* ===== Work Experience ===== */}
             <div>
               <h3 className="text-xl font-bold mb-8 flex items-center gap-3">
-                <span className="w-8 h-8 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center text-primary">💼</span>
+                <span className="w-9 h-9 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center">
+                  💼
+                </span>
                 Work Experience
               </h3>
+
               <div className="relative">
-                <div className="absolute left-4 top-0 bottom-0 w-0.5 timeline-line" />
+                {/* Animated timeline line */}
+                <motion.div
+                  initial={{ scaleY: 0 }}
+                  whileInView={{ scaleY: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1.2, ease: 'easeOut' }}
+                  style={{ transformOrigin: 'top' }}
+                  className="absolute left-4 top-0 bottom-0 w-0.5 timeline-line"
+                />
+
                 <div className="space-y-8">
                   {experience.map((exp, i) => (
                     <motion.div
@@ -29,57 +50,111 @@ export default function Experience() {
                       initial={{ opacity: 0, x: -30 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
-                      transition={{ delay: i * 0.1 }}
-                      className="pl-12 relative"
+                      transition={{ delay: i * 0.12, duration: 0.55 }}
+                      className="pl-14 relative"
                     >
-                      <div className="absolute left-0 top-1 w-9 h-9 rounded-full border-2 flex items-center justify-center"
-                        style={{ borderColor: exp.color, background: exp.color + '22' }}>
-                        <div className="w-3 h-3 rounded-full" style={{ background: exp.color }} />
-                      </div>
-                      <div className="glass rounded-2xl p-5 border border-white/5 card-hover"
-                        style={{ borderColor: exp.color + '22' }}>
+                      {/* Timeline dot */}
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        whileInView={{ scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: i * 0.12 + 0.2, type: 'spring', stiffness: 400 }}
+                        className="absolute left-0 top-2 w-9 h-9 rounded-full border-2 flex items-center justify-center"
+                        style={{
+                          borderColor: exp.color,
+                          background: exp.color + '22',
+                          boxShadow: `0 0 12px ${exp.color}44`,
+                        }}
+                      >
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ background: exp.color, boxShadow: `0 0 6px ${exp.color}` }}
+                        />
+                      </motion.div>
+
+                      <motion.div
+                        whileHover={{ y: -5, boxShadow: `0 16px 40px ${exp.color}18` }}
+                        className="glass rounded-2xl p-5 border transition-all duration-300"
+                        style={{ borderColor: exp.color + '28' }}
+                      >
                         <div className="flex flex-wrap items-start justify-between gap-2 mb-3">
                           <div>
                             <h4 className="font-bold text-white">{exp.role}</h4>
-                            <p className="text-sm" style={{ color: exp.color }}>{exp.company}</p>
+                            <p className="text-sm font-semibold mt-0.5" style={{ color: exp.color }}>
+                              {exp.company}
+                            </p>
                           </div>
-                          <div className="text-right">
+                          <div className="text-right shrink-0">
                             <span className="text-xs text-gray-500">{exp.period}</span>
-                            <span className="block text-xs px-2 py-0.5 rounded-full mt-1"
-                              style={{ background: exp.color + '22', color: exp.color }}>
+                            <span
+                              className="block text-xs px-2 py-0.5 rounded-full mt-1 font-medium"
+                              style={{ background: exp.color + '22', color: exp.color }}
+                            >
                               {exp.type}
                             </span>
                           </div>
                         </div>
-                        <p className="text-gray-400 text-sm mb-4">{exp.description}</p>
+
+                        <p className="text-gray-400 text-sm mb-4 leading-relaxed">{exp.description}</p>
+
+                        {/* Achievements — staggered */}
                         <ul className="space-y-1.5 mb-4">
                           {exp.achievements.map((a, ai) => (
-                            <li key={ai} className="flex items-start gap-2 text-xs text-gray-300">
-                              <span className="mt-1 w-1 h-1 rounded-full shrink-0" style={{ background: exp.color }} />
+                            <motion.li
+                              key={ai}
+                              initial={{ opacity: 0, x: -12 }}
+                              whileInView={{ opacity: 1, x: 0 }}
+                              viewport={{ once: true }}
+                              transition={{ delay: i * 0.1 + ai * 0.04 }}
+                              className="flex items-start gap-2 text-xs text-gray-300"
+                            >
+                              <span
+                                className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"
+                                style={{ background: exp.color }}
+                              />
                               {a}
-                            </li>
+                            </motion.li>
                           ))}
                         </ul>
+
+                        {/* Tech badges with hover glow */}
                         <div className="flex flex-wrap gap-1.5">
                           {exp.tech.map(t => (
-                            <span key={t} className="px-2 py-0.5 rounded text-xs bg-dark-200 text-gray-300 border border-white/5">{t}</span>
+                            <motion.span
+                              key={t}
+                              whileHover={{ scale: 1.08, boxShadow: `0 0 10px ${exp.color}44` }}
+                              className="px-2 py-0.5 rounded text-xs bg-dark-200 text-gray-300 border border-white/5 cursor-default transition-colors hover:border-white/20"
+                            >
+                              {t}
+                            </motion.span>
                           ))}
                         </div>
-                      </div>
+                      </motion.div>
                     </motion.div>
                   ))}
                 </div>
               </div>
             </div>
 
-            {/* Education */}
+            {/* ===== Education + Achievements ===== */}
             <div>
               <h3 className="text-xl font-bold mb-8 flex items-center gap-3">
-                <span className="w-8 h-8 rounded-lg bg-secondary/20 border border-secondary/30 flex items-center justify-center text-secondary">🎓</span>
+                <span className="w-9 h-9 rounded-xl bg-secondary/15 border border-secondary/30 flex items-center justify-center">
+                  🎓
+                </span>
                 Education
               </h3>
+
               <div className="relative">
-                <div className="absolute left-4 top-0 bottom-0 w-0.5" style={{ background: 'linear-gradient(180deg, #00D4FF, #FF6B9D)' }} />
+                <motion.div
+                  initial={{ scaleY: 0 }}
+                  whileInView={{ scaleY: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1.2, ease: 'easeOut' }}
+                  style={{ transformOrigin: 'top', background: 'linear-gradient(180deg, #00D4FF, #FF6B9D)' }}
+                  className="absolute left-4 top-0 bottom-0 w-0.5"
+                />
+
                 <div className="space-y-8">
                   {education.map((edu, i) => (
                     <motion.div
@@ -87,27 +162,45 @@ export default function Experience() {
                       initial={{ opacity: 0, x: 30 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
-                      transition={{ delay: i * 0.1 }}
-                      className="pl-12 relative"
+                      transition={{ delay: i * 0.12, duration: 0.55 }}
+                      className="pl-14 relative"
                     >
-                      <div className="absolute left-0 top-1 w-9 h-9 rounded-full border-2 flex items-center justify-center"
-                        style={{ borderColor: edu.color, background: edu.color + '22' }}>
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        whileInView={{ scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: i * 0.12 + 0.2, type: 'spring', stiffness: 400 }}
+                        className="absolute left-0 top-2 w-9 h-9 rounded-full border-2 flex items-center justify-center"
+                        style={{
+                          borderColor: edu.color,
+                          background: edu.color + '22',
+                          boxShadow: `0 0 12px ${edu.color}44`,
+                        }}
+                      >
                         <div className="w-3 h-3 rounded-full" style={{ background: edu.color }} />
-                      </div>
-                      <div className="glass rounded-2xl p-5 border border-white/5 card-hover">
+                      </motion.div>
+
+                      <motion.div
+                        whileHover={{ y: -5, boxShadow: `0 16px 40px ${edu.color}18` }}
+                        className="glass rounded-2xl p-5 border border-white/5 transition-all duration-300"
+                      >
                         <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
                           <div>
                             <h4 className="font-bold text-white text-sm">{edu.degree}</h4>
-                            <p className="text-sm" style={{ color: edu.color }}>{edu.institution}</p>
+                            <p className="text-sm font-semibold mt-0.5" style={{ color: edu.color }}>
+                              {edu.institution}
+                            </p>
                           </div>
-                          <span className="text-xs text-gray-500">{edu.period}</span>
+                          <span className="text-xs text-gray-500 shrink-0">{edu.period}</span>
                         </div>
-                        <p className="text-gray-400 text-sm mb-3">{edu.description}</p>
-                        <span className="text-xs px-3 py-1 rounded-full"
-                          style={{ background: edu.color + '22', color: edu.color }}>
+                        <p className="text-gray-400 text-sm mb-3 leading-relaxed">{edu.description}</p>
+                        <span
+                          className="text-xs px-3 py-1 rounded-full font-semibold"
+                          style={{ background: edu.color + '22', color: edu.color }}
+                        >
                           {edu.grade}
                         </span>
-                      </div>
+                      </motion.div>
                     </motion.div>
                   ))}
                 </div>
@@ -115,33 +208,30 @@ export default function Experience() {
 
               {/* Key Achievements */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
                 className="mt-12"
               >
                 <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
-                  <span className="w-8 h-8 rounded-lg bg-accent/20 border border-accent/30 flex items-center justify-center">🏆</span>
+                  <span className="w-9 h-9 rounded-xl bg-accent/15 border border-accent/30 flex items-center justify-center">
+                    🏆
+                  </span>
                   Key Achievements
                 </h3>
                 <div className="space-y-3">
-                  {[
-                    { icon: '💰', text: 'Managed $2M+ in blockchain transactions' },
-                    { icon: '👥', text: 'Served 100K+ users across multiple platforms' },
-                    { icon: '⭐', text: 'Maintained 5-star rating on freelance platforms' },
-                    { icon: '🚀', text: 'Reduced deployment time by 80% with CI/CD' },
-                    { icon: '📈', text: 'Improved app performance by 60%' },
-                    { icon: '🌍', text: 'Delivered projects to 10+ countries' },
-                  ].map((item, i) => (
+                  {achievements.map((item, i) => (
                     <motion.div
                       key={i}
                       initial={{ opacity: 0, x: 20 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
-                      transition={{ delay: i * 0.07 }}
-                      className="flex items-center gap-3 glass rounded-xl p-3 border border-white/5"
+                      transition={{ delay: i * 0.07, duration: 0.4 }}
+                      whileHover={{ x: 6, boxShadow: '0 8px 24px rgba(108,99,255,0.12)' }}
+                      className="flex items-center gap-3 glass rounded-xl p-3.5 border border-white/5 hover:border-primary/20 transition-all cursor-default"
                     >
-                      <span className="text-xl">{item.icon}</span>
+                      <span className="text-xl shrink-0">{item.icon}</span>
                       <span className="text-gray-300 text-sm">{item.text}</span>
                     </motion.div>
                   ))}

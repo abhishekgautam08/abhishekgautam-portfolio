@@ -2,6 +2,13 @@ import { motion } from 'framer-motion'
 import SectionHeader from '../components/SectionHeader'
 import { certifications } from '../data/portfolioData'
 
+const stats = [
+  { label: 'Total Certifications', value: certifications.length, icon: '🏆' },
+  { label: 'Cloud Certifications', value: 3, icon: '☁️' },
+  { label: 'Blockchain Certs', value: 2, icon: '⛓️' },
+  { label: 'Dev Certifications', value: 3, icon: '💻' },
+]
+
 export default function Certifications() {
   return (
     <div className="relative z-10 pt-20">
@@ -20,18 +27,36 @@ export default function Certifications() {
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
-                whileHover={{ y: -8, scale: 1.02 }}
-                className="glass rounded-2xl p-6 border border-white/5 card-hover relative overflow-hidden group"
+                transition={{ delay: i * 0.07, duration: 0.45 }}
+                whileHover={{ y: -8, boxShadow: `0 20px 48px ${cert.color}22` }}
+                className="glass rounded-2xl p-6 border border-white/5 hover:border-white/15 group relative overflow-hidden transition-all duration-300"
               >
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent to-transparent"
-                  style={{ background: `linear-gradient(90deg, transparent, ${cert.color}, transparent)` }} />
-                <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-5 group-hover:opacity-10 transition-opacity"
-                  style={{ background: cert.color }} />
+                {/* Top gradient accent bar */}
+                <div
+                  className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl"
+                  style={{ background: `linear-gradient(90deg, transparent, ${cert.color}, transparent)` }}
+                />
 
-                <div className="text-4xl mb-4">{cert.icon}</div>
+                {/* Background color bloom on hover */}
+                <motion.div
+                  className="absolute -top-12 -right-12 w-36 h-36 rounded-full blur-2xl pointer-events-none"
+                  style={{ background: cert.color }}
+                  initial={{ opacity: 0.04 }}
+                  whileHover={{ opacity: 0.1 }}
+                  transition={{ duration: 0.3 }}
+                />
+
+                {/* Icon */}
+                <motion.div
+                  whileHover={{ scale: 1.15, rotate: 5 }}
+                  transition={{ type: 'spring', stiffness: 300 }}
+                  className="text-4xl mb-4 inline-block"
+                >
+                  {cert.icon}
+                </motion.div>
+
                 <h3 className="font-bold text-white text-sm mb-2 leading-snug">{cert.title}</h3>
-                <p className="text-xs mb-3 font-semibold" style={{ color: cert.color }}>{cert.issuer}</p>
+                <p className="text-xs mb-3 font-bold" style={{ color: cert.color }}>{cert.issuer}</p>
                 <p className="text-gray-400 text-xs mb-4 leading-relaxed">{cert.description}</p>
 
                 <div className="border-t border-white/5 pt-3 space-y-1.5">
@@ -39,15 +64,19 @@ export default function Certifications() {
                     <span className="text-xs text-gray-500">Issued</span>
                     <span className="text-xs text-gray-300">{cert.date}</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500">ID</span>
-                    <span className="text-xs font-mono text-gray-400 truncate ml-2">{cert.credentialId}</span>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-gray-500 shrink-0">ID</span>
+                    <span className="text-xs font-mono text-gray-400 truncate">{cert.credentialId}</span>
                   </div>
                 </div>
 
                 <div className="mt-4 flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                  <span className="text-xs text-green-400">Verified</span>
+                  <motion.div
+                    animate={{ scale: [1, 1.4, 1], opacity: [1, 0.6, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="w-2 h-2 rounded-full bg-green-400"
+                  />
+                  <span className="text-xs text-green-400 font-medium">Verified</span>
                 </div>
               </motion.div>
             ))}
@@ -58,25 +87,28 @@ export default function Certifications() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            transition={{ delay: 0.15 }}
             className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6"
           >
-            {[
-              { label: 'Total Certifications', value: certifications.length, icon: '🏆' },
-              { label: 'Cloud Certifications', value: 3, icon: '☁️' },
-              { label: 'Blockchain Certs', value: 2, icon: '⛓️' },
-              { label: 'Dev Certifications', value: 3, icon: '💻' },
-            ].map((s, i) => (
+            {stats.map((s, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.85 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="glass rounded-2xl p-6 text-center border border-white/5"
+                transition={{ delay: i * 0.1, type: 'spring', stiffness: 200 }}
+                whileHover={{ y: -6, boxShadow: '0 14px 36px rgba(108,99,255,0.15)' }}
+                className="glass rounded-2xl p-6 text-center border border-white/5 hover:border-primary/20 transition-all duration-300 cursor-default"
               >
-                <div className="text-3xl mb-2">{s.icon}</div>
+                <motion.div
+                  whileHover={{ scale: 1.2, rotate: 8 }}
+                  transition={{ type: 'spring', stiffness: 300 }}
+                  className="text-3xl mb-3 inline-block"
+                >
+                  {s.icon}
+                </motion.div>
                 <div className="text-3xl font-black gradient-text mb-1">{s.value}+</div>
-                <p className="text-gray-400 text-xs">{s.label}</p>
+                <p className="text-gray-400 text-xs leading-snug">{s.label}</p>
               </motion.div>
             ))}
           </motion.div>
