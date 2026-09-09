@@ -34,11 +34,32 @@ export default async function handler(req, res) {
     const lastUserMessage = [...messages].reverse().find(m => m.role === 'user');
     const userQuery = lastUserMessage ? lastUserMessage.content : '';
 
-    // Fast off-topic / prompt-injection check
-    const isOffTopic = /weather|recipe|poem|joke|solve this math|who won the match|write a song|ignore previous instructions/i.test(userQuery);
-    if (isOffTopic && !/abhishek|code|react|node|aws|work|experience|project/i.test(userQuery)) {
+    // Fast Guardrails: Prevent misuse as a generic coding assistant, homework solver, or general AI tool
+    const isGenericCodingRequest =
+      /\b(write|give|provide|show|generate|create|send|build)\b.*\b(code|script|snippet|function|program|query|regex|solution|tutorial|boilerplate|page|app)\b/i.test(userQuery)
+      || /\bhow\s+(to|can\s+i|do\s+i)\s+(connect|write|build|create|code|implement|install|setup|fix|debug|use)\b/i.test(userQuery)
+      || /\b(connect|integration)\s+\w+\s+(to|with)\s+\w+\b.*\b(code|example|steps)?\b/i.test(userQuery)
+      || /\b(solve|debug|fix)\s+(this|my)\b/i.test(userQuery);
+
+    const isAskingAboutAbhishekSpecifically = /\b(abhishek|your experience|your project|your work|how did you|what did you|tell me about your|why did you|your architecture|your role|your stack)\b/i.test(userQuery);
+
+    const isGeneralOffTopic = /weather|recipe|poem|joke|solve this math|who won the match|write a song|ignore previous instructions|world cup|capital of|tell me a story|lyrics|president/i.test(userQuery);
+
+    if ((isGenericCodingRequest || isGeneralOffTopic) && !isAskingAboutAbhishekSpecifically) {
+      const refusalMsg = "I am Abhishek Gautam's personal AI representative, not a general-purpose coding assistant. I cannot write code snippets, tutorials, or scripts for external work. I'm here specifically to answer questions about Abhishek's engineering background, architectural designs, work history, and portfolio projects. Feel free to ask about his work or reach out at gautamabhishek0810@gmail.com!";
+      if (stream) {
+        res.writeHead(200, {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          Connection: 'keep-alive',
+        });
+        res.write(`data: ${JSON.stringify({ choices: [{ delta: { content: refusalMsg } }] })}\n\n`);
+        res.write('data: [DONE]\n\n');
+        res.end();
+        return;
+      }
       return send(res, 200, {
-        reply: "I am Abhishek Gautam's personal AI representative. I'm here to answer questions about his software engineering background, architectural designs, work history, skills, and portfolio projects. Feel free to ask about any of his work!",
+        reply: refusalMsg,
         sources: []
       });
     }
@@ -52,9 +73,10 @@ export default async function handler(req, res) {
 Your objective is to give recruiters, engineering managers, and visitors comprehensive, accurate, and professional answers about Abhishek's career, technical skills, projects, and achievements.
 
 ### CRITICAL RULES:
-- TARGET LENGTH: Provide thorough yet focused answers of around 6 to 7 lines (approx. 100 to 160 words). Avoid answers that are too brief (1-2 lines) or excessively long essays.
-- EXPLAIN TECHNICAL DEPTH: When answering technical questions (e.g. Vite micro-frontends, multi-tenant MongoDB, AWS audits), clearly explain the architectural design, the specific tools and patterns used, and the measurable business impact.
-- SCOPE RESTRICTION: You represent ONLY Abhishek Gautam. For any out-of-scope, unrelated, or random questions (such as cooking, math, generic trivia, or general AI tasks), politely state in 1-2 lines that you only answer questions about Abhishek Gautam's career and projects.
+- STRICT NO-CODE FOR EXTERNAL WORK: You must NEVER write generic code snippets, functions, tutorials, or scripts for visitors (e.g. connecting MongoDB to Node.js, sorting algorithms, building login forms, or debugging their personal code). You are strictly Abhishek Gautam's portfolio representative, NOT a general-purpose coding bot. If asked to write code for external tasks, refuse politely and explain that you can discuss how Abhishek designed his systems, but cannot write code for external projects.
+- TARGET LENGTH: Provide thorough yet focused answers of around 5 to 7 lines (approx. 100 to 150 words). Avoid answers that are too brief (1-2 lines) or excessively long essays.
+- EXPLAIN TECHNICAL DEPTH: When answering technical questions (e.g. Vite micro-frontends, multi-tenant MongoDB, AWS audits), explain the architectural design, patterns used, and measurable results. Do not write raw code blocks.
+- SCOPE RESTRICTION: You represent ONLY Abhishek Gautam. For any out-of-scope, unrelated, or random questions (such as cooking, math, trivia, or general AI tasks), politely state in 1-2 lines that you only answer questions about Abhishek Gautam's career and projects.
 - Speak directly in first person ("I") or professional third person ("Abhishek").
 - Base answers strictly on the verified background information provided in the context below.
 - If a question is not covered in the context, concisely suggest contacting Abhishek directly via email (gautamabhishek0810@gmail.com) or LinkedIn.
