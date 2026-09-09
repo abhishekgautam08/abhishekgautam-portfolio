@@ -1,11 +1,19 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiMessageCircle, FiX, FiSend, FiUser, FiCpu } from 'react-icons/fi'
+import { FiMessageCircle, FiX, FiSend, FiUser, FiCpu, FiBookOpen } from 'react-icons/fi'
 
 const INITIAL_MESSAGE = {
   role: 'assistant',
-  content: "Hi! I'm Abhishek's AI assistant 👋 Ask me anything about his skills, projects, experience, or how to get in touch!",
+  content: "Hi! I'm Abhishek's AI representative 👋 Ask me anything about his fintech & healthtech platforms, multi-tenant MongoDB designs, Vite Module Federation architecture, AWS cost optimizations, skills, or experience!",
 }
+
+const SUGGESTED_PROMPTS = [
+  'How did you cut AWS cloud costs by 20%?',
+  'Explain your multi-tenant MongoDB design',
+  'Tell me about your Vite micro-frontend setup',
+  'What did you build at Vigorus Healthtech?',
+  'What certifications do you hold?',
+]
 
 function TypingIndicator() {
   return (
@@ -45,14 +53,26 @@ function Message({ msg }) {
           : <FiCpu className="text-primary text-xs" />
         }
       </div>
-      <div
-        className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
-          isUser
-            ? 'bg-primary/80 text-white rounded-br-sm'
-            : 'glass-dark border border-white/10 text-gray-200 dark:text-gray-200 rounded-bl-sm'
-        }`}
-      >
-        {msg.content}
+      <div className="max-w-[85%] flex flex-col gap-1.5">
+        <div
+          className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
+            isUser
+              ? 'bg-primary/80 text-white rounded-br-sm'
+              : 'glass-dark border border-white/10 text-gray-200 dark:text-gray-200 rounded-bl-sm'
+          }`}
+        >
+          {msg.content}
+        </div>
+        {msg.sources && msg.sources.length > 0 && (
+          <div className="flex flex-wrap gap-1 px-1">
+            <span className="text-[10px] text-gray-500 flex items-center gap-1"><FiBookOpen size={10} /> Verified Sources:</span>
+            {msg.sources.map((s, idx) => (
+              <span key={idx} className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-gray-400">
+                {s}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -74,8 +94,8 @@ export default function ChatWidget() {
     if (isOpen) inputRef.current?.focus()
   }, [isOpen])
 
-  async function sendMessage() {
-    const text = input.trim()
+  async function sendMessage(textToSend) {
+    const text = (typeof textToSend === 'string' ? textToSend : input).trim()
     if (!text || isLoading) return
 
     const userMsg = { role: 'user', content: text }
@@ -90,11 +110,54 @@ export default function ChatWidget() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: nextMessages.filter((m) => m.role !== 'system'),
+          stream: true,
         }),
       })
+
+      const contentType = res.headers.get('content-type') || ''
+      if (contentType.includes('text/event-stream') && res.body) {
+        setIsLoading(false)
+        const assistantMsg = { role: 'assistant', content: '' }
+        setMessages((prev) => [...prev, assistantMsg])
+
+        const reader = res.body.getReader()
+        const decoder = new TextDecoder()
+        let accumulated = ''
+
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          const chunk = decoder.decode(value, { stream: true })
+          const lines = chunk.split('\n')
+          for (const line of lines) {
+            if (line.startsWith('data: ') && line.trim() !== 'data: [DONE]') {
+              try {
+                const json = JSON.parse(line.slice(6))
+                const delta = json.choices?.[0]?.delta?.content || ''
+                if (delta) {
+                  accumulated += delta
+                  setMessages((prev) => {
+                    const updated = [...prev]
+                    updated[updated.length - 1] = {
+                      ...updated[updated.length - 1],
+                      content: accumulated,
+                    }
+                    return updated
+                  })
+                }
+              } catch {
+                // partial line or parsing error - ignore
+              }
+            }
+          }
+        }
+        return
+      }
+
+      // Fallback JSON handling
       const data = await res.json()
       if (data.reply) {
-        setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }])
+        setMessages((prev) => [...prev, { role: 'assistant', content: data.reply, sources: data.sources }])
       } else {
         setMessages((prev) => [
           ...prev,
@@ -128,7 +191,7 @@ export default function ChatWidget() {
             exit={{ opacity: 0, y: 16, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 320, damping: 28 }}
             className="w-80 sm:w-96 rounded-2xl overflow-hidden shadow-2xl border border-primary/20 flex flex-col"
-            style={{ maxHeight: '480px', background: 'rgba(10,10,26,0.92)', backdropFilter: 'blur(20px)' }}
+            style={{ maxHeight: '520px', background: 'rgba(10,10,26,0.95)', backdropFilter: 'blur(20px)' }}
           >
             {/* Header */}
             <div className="px-4 py-3 border-b border-white/10 flex items-center gap-3 bg-gradient-to-r from-primary/20 to-secondary/10">
@@ -136,8 +199,8 @@ export default function ChatWidget() {
                 <FiCpu className="text-primary text-sm" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white text-sm font-semibold leading-none">Abhishek's AI Assistant</p>
-                <p className="text-primary text-xs mt-0.5">Powered by Claude · Always online</p>
+                <p className="text-white text-sm font-semibold leading-none">Abhishek's AI Representative</p>
+                <p className="text-primary text-xs mt-0.5 font-medium">Powered by Meta LLaMA & RAG · Online</p>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
@@ -159,11 +222,11 @@ export default function ChatWidget() {
             {/* Suggested prompts — show only with initial message */}
             {messages.length === 1 && !isLoading && (
               <div className="px-4 pb-2 flex flex-wrap gap-1.5">
-                {['What are your skills?', 'Tell me about your projects', 'Your experience?', 'How to contact you?'].map((prompt) => (
+                {SUGGESTED_PROMPTS.map((prompt) => (
                   <button
                     key={prompt}
-                    onClick={() => { setInput(prompt); inputRef.current?.focus() }}
-                    className="text-xs px-2.5 py-1 rounded-full border border-primary/30 text-primary/80 hover:bg-primary/10 transition-colors"
+                    onClick={() => sendMessage(prompt)}
+                    className="text-xs px-2.5 py-1 rounded-full border border-primary/30 text-primary/90 hover:bg-primary/15 hover:border-primary/50 transition-all text-left"
                   >
                     {prompt}
                   </button>
@@ -178,13 +241,13 @@ export default function ChatWidget() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask about skills, projects..."
+                placeholder="Ask about my architecture, skills, AWS savings..."
                 rows={1}
                 className="flex-1 px-3 py-2 rounded-xl glass border border-white/10 text-white placeholder-gray-500 text-sm bg-transparent resize-none input-focus-glow transition-all duration-300 leading-relaxed"
                 style={{ maxHeight: '80px', overflowY: 'auto' }}
               />
               <motion.button
-                onClick={sendMessage}
+                onClick={() => sendMessage()}
                 disabled={!input.trim() || isLoading}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
