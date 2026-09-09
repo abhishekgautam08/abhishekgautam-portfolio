@@ -4,10 +4,11 @@ import { FiMessageCircle, FiX, FiSend, FiUser, FiCpu, FiBookOpen } from 'react-i
 
 const INITIAL_MESSAGE = {
   role: 'assistant',
-  content: "Hi! I'm Abhishek's AI representative 👋 Ask me anything about his fintech & healthtech platforms, multi-tenant MongoDB designs, Vite Module Federation architecture, AWS cost optimizations, skills, or experience!",
+  content: "Hi! I'm Abhishek's AI representative 👋 Ask me anything about his fintech & healthtech platforms, AI & RAG pipelines, multi-tenant MongoDB designs, Vite Module Federation architecture, AWS cost optimizations, skills, or experience!",
 }
 
 const SUGGESTED_PROMPTS = [
+  'Tell me about your AI & RAG pipeline implementation',
   'How did you cut AWS cloud costs by 20%?',
   'Explain your multi-tenant MongoDB design',
   'Tell me about your Vite micro-frontend setup',
@@ -42,11 +43,10 @@ function Message({ msg }) {
   return (
     <div className={`flex items-end gap-2 ${isUser ? 'flex-row-reverse' : ''}`}>
       <div
-        className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
-          isUser
+        className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${isUser
             ? 'bg-secondary/20 border border-secondary/30'
             : 'bg-primary/20 border border-primary/30'
-        }`}
+          }`}
       >
         {isUser
           ? <FiUser className="text-secondary text-xs" />
@@ -55,11 +55,10 @@ function Message({ msg }) {
       </div>
       <div className="max-w-[85%] flex flex-col gap-1.5">
         <div
-          className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
-            isUser
+          className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${isUser
               ? 'bg-primary/80 text-white rounded-br-sm'
               : 'glass-dark border border-white/10 text-gray-200 dark:text-gray-200 rounded-bl-sm'
-          }`}
+            }`}
         >
           {msg.content}
         </div>
@@ -150,6 +149,17 @@ export default function ChatWidget() {
               }
             }
           }
+        }
+
+        if (!accumulated.trim()) {
+          setMessages((prev) => {
+            const updated = [...prev]
+            updated[updated.length - 1] = {
+              ...updated[updated.length - 1],
+              content: "I'm temporarily experiencing connectivity issues. Abhishek is a Full Stack Developer (MERN, AWS). Please reach him directly at gautamabhishek0810@gmail.com!",
+            }
+            return updated
+          })
         }
         return
       }

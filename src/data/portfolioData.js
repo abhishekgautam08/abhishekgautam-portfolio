@@ -9,12 +9,12 @@ export const personalInfo = {
   github: 'https://github.com/abhishekgautam08',
   linkedin: 'https://linkedin.com/in/abhishekgautam08',
   website: 'https://abhishekgautam.vercel.app',
-  bio: "Full Stack Developer (MERN) with 3.5+ years delivering production-grade fintech and healthtech platforms independently. Specializes in micro-frontend architecture with Vite Module Federation, multi-tenant MongoDB systems serving multiple enterprise tenants, and AWS-native deployments across EC2, Lambda, ElastiCache, and KMS.",
-  longBio: `Full Stack Developer (MERN) with 3.5+ years delivering production-grade fintech and healthtech platforms independently. Specializes in micro-frontend architecture with Vite Module Federation, multi-tenant MongoDB systems serving multiple enterprise tenants, and AWS-native deployments across EC2, Lambda, ElastiCache, and KMS.
+  bio: "Full Stack Developer (MERN) with 3.5+ years delivering production-grade fintech and healthtech platforms independently. Specializes in micro-frontend architecture with Vite Module Federation, multi-tenant MongoDB systems serving multiple enterprise tenants, AWS-native deployments (EC2, Lambda, ElastiCache, KMS), and production AI integrations with LLMs & RAG pipelines.",
+  longBio: `Full Stack Developer (MERN) with 3.5+ years delivering production-grade fintech and healthtech platforms independently. Specializes in micro-frontend architecture with Vite Module Federation, multi-tenant MongoDB systems serving multiple enterprise tenants, AWS-native deployments across EC2, Lambda, ElastiCache, and KMS, and production AI engineering with LLMs and RAG pipelines.
 
 Proven track record owning end-to-end system design and implementation — from architecture decisions through live release — with strong async collaboration via GitHub, Jira, and documented technical specs. Comfortable working across time zones in async-first, globally distributed team environments.
 
-I've shipped consistently on two-week release cycles across 15+ months with zero P1 production incidents, reduced cloud infrastructure costs by 15–20%, and built LLM-powered microservices and KYC automation systems from the ground up.`,
+I've shipped consistently on two-week release cycles across 15+ months with zero P1 production incidents, reduced cloud infrastructure costs by 15–20%, and built LLM-powered microservices, intelligent RAG pipelines, and KYC automation systems from the ground up.`,
 };
 
 export const stats = [
@@ -27,6 +27,7 @@ export const stats = [
 export const typingTexts = [
   'Full Stack Developer (MERN)',
   'Micro-Frontend Architect',
+  'AI & RAG Pipeline Engineer',
   'Fintech Platform Builder',
   'Multi-Tenant MongoDB Specialist',
   'AWS Cloud Developer',
@@ -43,8 +44,7 @@ export const skills = {
     { name: 'Micro Frontends', level: 88, icon: 'SiVite', color: '#646CFF' },
     { name: 'Module Federation (Vite)', level: 88, icon: 'SiVite', color: '#FFBD2E' },
     { name: 'Bootstrap', level: 85, icon: 'SiBootstrap', color: '#7952B3' },
-    { name: 'Material UI', level: 82, icon: 'SiMui', color: '#007FFF' },
-    { name: 'HTML5 / CSS3', level: 98, icon: 'SiHtml5', color: '#E34F26' },
+    { name: 'Tailwind CSS', level: 92, icon: 'SiTailwindcss', color: '#06B6D4' },
   ],
   backend: [
     { name: 'Node.js', level: 95, icon: 'SiNodedotjs', color: '#339933' },
@@ -77,10 +77,13 @@ export const skills = {
     { name: 'GitHub Actions / CI/CD', level: 88, icon: 'SiGithubactions', color: '#2088FF' },
   ],
   ai: [
+    { name: 'RAG Pipelines', level: 92, icon: 'SiOpenai', color: '#10A37F' },
+    { name: 'OpenAI API (GPT-4)', level: 90, icon: 'SiOpenai', color: '#412991' },
+    { name: 'NVIDIA NIM & LLaMA', level: 88, icon: 'SiNvidia', color: '#76B900' },
+    { name: 'LLM & Prompt Guardrails', level: 90, icon: 'SiOpenai', color: '#00D4FF' },
+    { name: 'Vector Search & Embeddings', level: 85, icon: 'SiDatadog', color: '#6C63FF' },
     { name: 'Python', level: 78, icon: 'SiPython', color: '#3776AB' },
     { name: 'FastAPI', level: 75, icon: 'SiFastapi', color: '#009688' },
-    { name: 'OpenAI API (GPT-4)', level: 90, icon: 'SiOpenai', color: '#412991' },
-    { name: 'LLM Integration', level: 88, icon: 'SiOpenai', color: '#412991' },
     { name: 'AWS Rekognition', level: 75, icon: 'SiAmazonaws', color: '#FF9900' },
   ],
   security: [

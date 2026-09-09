@@ -35,7 +35,7 @@ export function retrieveRelevantContext(query, topK = 4) {
     let score = 0;
     const chunkTitle = chunk.title.toLowerCase();
     const chunkContent = chunk.content.toLowerCase();
-    const chunkTopics = chunk.topics.map(t => t.toLowerCase());
+    const chunkTopics = (chunk.topics || []).map(t => t.toLowerCase());
 
     // 1. Exact phrase match
     if (queryTokens.length >= 2 && chunkContent.includes(queryLower)) {

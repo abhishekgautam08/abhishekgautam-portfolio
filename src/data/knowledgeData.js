@@ -5,9 +5,9 @@ export const knowledgeChunks = [
     id: 'bio-summary',
     title: 'Professional Bio & Career Overview',
     category: 'Bio',
-    topics: ['bio', 'experience', 'summary', 'about', 'role', 'full stack', 'mern', 'location', 'contact'],
-    content: `Abhishek Gautam is a Full Stack Developer (MERN Stack) with 3.5+ years of production experience delivering production-grade fintech and healthtech platforms independently.
-Specializes in micro-frontend architecture with Vite Module Federation, multi-tenant MongoDB systems serving multiple enterprise tenants, and AWS-native cloud deployments across EC2, Lambda, ElastiCache, and KMS.
+    topics: ['bio', 'experience', 'summary', 'about', 'role', 'full stack', 'mern', 'ai', 'rag', 'location', 'contact'],
+    content: `Abhishek Gautam is a Full Stack Developer (MERN Stack) & AI with 3.5+ years of production experience delivering production-grade fintech and healthtech platforms independently.
+Specializes in micro-frontend architecture with Vite Module Federation, multi-tenant MongoDB systems serving multiple enterprise tenants, AWS-native cloud deployments (EC2, Lambda, ElastiCache, KMS), and production AI engineering with LLMs and RAG pipelines.
 Proven track record owning end-to-end system design and implementation — from architecture decisions through live release — with strong async collaboration via GitHub, Jira, and documented technical specifications.
 Comfortable working across time zones in async-first, globally distributed team environments.
 Location: Jaipur, Rajasthan, India.
@@ -94,6 +94,19 @@ Tech Stack Used: React.js, Next.js, Node.js, Express.js, TypeScript, MongoDB, Vi
   },
 
   {
+    id: 'ai-rag-expertise',
+    title: 'AI Engineering, LLMs, and RAG Pipeline Expertise',
+    category: 'AI & LLM',
+    topics: ['ai', 'rag', 'llm', 'retrieval', 'vector', 'embeddings', 'nvidia nim', 'openai', 'gpt-4', 'prompt engineering', 'guardrails', 'skills'],
+    content: `AI Engineering & Generative AI Skills of Abhishek Gautam:
+• Retrieval-Augmented Generation (RAG): Architected production RAG pipelines integrating fast BM25 keyword matching and vector semantic context injection with top-k ranking for sub-millisecond retrieval.
+• LLM Integrations: Deep hands-on experience integrating Meta LLaMA (LLaMA 3.2 Vision/Instruct via NVIDIA NIM), OpenAI GPT-4, and Anthropic Claude APIs into production Node.js microservices.
+• Streaming & Real-time Inference: Architected Server-Sent Events (SSE) and HTTP streaming with ReadableStream decoder readers to deliver real-time token streaming to frontend React clients with zero perceptible latency.
+• AI Guardrails & Reliability: Engineered strict prompt guardrails, hallucination mitigation strategies (low temperature, strict contextual grounding), regex query interception, and per-tenant Redis rate limiting to keep AI API costs controlled.
+• Computer Vision & NLP: Integrated AWS Rekognition for clinical document insights, automated report classification, and facial verification.`,
+  },
+
+  {
     id: 'exp-vigorus-overview',
     title: 'Work Experience at Vigorus Healthtech Private Limited (Chikitsa)',
     category: 'Experience',
@@ -129,7 +142,7 @@ Tech Stack: React.js, Node.js, Express.js, MongoDB, Puppeteer, AWS Rekognition, 
 • Backend: Node.js, Express.js, TypeScript, REST APIs, GraphQL, Microservices, JWT, WebSockets.
 • Database: MongoDB, Mongoose, PostgreSQL, SQL, Multi-Tenant Architecture, Aggregation Pipelines, Indexing Strategies, Redis.
 • Cloud & DevOps: AWS (EC2, S3, Lambda, API Gateway, Amplify, ElastiCache, CloudFront), Docker, Nginx (Reverse Proxy & SSL), GitHub Actions, CI/CD pipelines.
-• AI & Scripting: Python, FastAPI, OpenAI API (GPT-4), LLM Integration, AWS Rekognition.
+• AI & Scripting: RAG Pipelines, OpenAI API (GPT-4), NVIDIA NIM & LLaMA, LLM Integration & Prompt Engineering, Vector Search & Embeddings, Python, FastAPI, AWS Rekognition.
 • Security & Compliance: AWS KMS (Field-Level Encryption), Role-Based Access Control (RBAC), Aadhaar & PAN Verification APIs (Singzy), In-House E-Signature APIs.
 • Async & Collaboration: GitHub, Jira, Postman, Swagger / OpenAPI, Notion, Agile / Scrum, Puppeteer, Fabric.js.`,
   },

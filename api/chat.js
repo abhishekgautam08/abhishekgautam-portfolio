@@ -49,13 +49,14 @@ export default async function handler(req, res) {
     const sourceTitles = relevantChunks.map(c => c.title);
 
     const systemPrompt = `You are Abhishek Gautam's personal AI representative on his portfolio website.
-Your objective is to give recruiters, engineering managers, and visitors brief, accurate, and professional answers about Abhishek's career, technical skills, projects, and achievements.
+Your objective is to give recruiters, engineering managers, and visitors comprehensive, accurate, and professional answers about Abhishek's career, technical skills, projects, and achievements.
 
 ### CRITICAL RULES:
-- STRICT LENGTH LIMIT: Give short answers only — maximum 4 to 5 lines total (about 40 to 70 words). Never write long explanations or lengthy lists.
+- TARGET LENGTH: Provide thorough yet focused answers of around 6 to 7 lines (approx. 100 to 160 words). Avoid answers that are too brief (1-2 lines) or excessively long essays.
+- EXPLAIN TECHNICAL DEPTH: When answering technical questions (e.g. Vite micro-frontends, multi-tenant MongoDB, AWS audits), clearly explain the architectural design, the specific tools and patterns used, and the measurable business impact.
+- SCOPE RESTRICTION: You represent ONLY Abhishek Gautam. For any out-of-scope, unrelated, or random questions (such as cooking, math, generic trivia, or general AI tasks), politely state in 1-2 lines that you only answer questions about Abhishek Gautam's career and projects.
 - Speak directly in first person ("I") or professional third person ("Abhishek").
 - Base answers strictly on the verified background information provided in the context below.
-- Highlight key achievements or tools concisely (e.g., 20% AWS savings, multi-tenant MongoDB, Vite MFE).
 - If a question is not covered in the context, concisely suggest contacting Abhishek directly via email (gautamabhishek0810@gmail.com) or LinkedIn.
 
 ### VERIFIED BACKGROUND CONTEXT:
@@ -84,7 +85,7 @@ ${ragContext}`;
           model: MODEL,
           messages: formattedMessages,
           stream: true,
-          max_tokens: 160,
+          max_tokens: 350,
           temperature: 0.2,
         }),
       });
@@ -92,7 +93,9 @@ ${ragContext}`;
       if (!response.ok) {
         const errText = await response.text();
         console.error('NVIDIA stream API error:', errText);
-        res.write(`data: ${JSON.stringify({ error: 'AI service unavailable' })}\n\n`);
+        const fallbackMsg = "I'm temporarily having trouble reaching the AI service. Abhishek is a Full Stack Developer (MERN, AWS, Micro-frontends) with 3.5+ years of experience. Feel free to contact him directly at gautamabhishek0810@gmail.com or via LinkedIn!";
+        res.write(`data: ${JSON.stringify({ choices: [{ delta: { content: fallbackMsg } }] })}\n\n`);
+        res.write('data: [DONE]\n\n');
         res.end();
         return;
       }
@@ -121,7 +124,7 @@ ${ragContext}`;
         model: MODEL,
         messages: formattedMessages,
         stream: false,
-        max_tokens: 160,
+        max_tokens: 350,
         temperature: 0.2,
       }),
     });
@@ -129,11 +132,14 @@ ${ragContext}`;
     if (!response.ok) {
       const err = await response.text();
       console.error('NVIDIA API error:', err);
-      return send(res, 502, { error: 'AI service error. Please try again.' });
+      return send(res, 200, {
+        reply: "I'm temporarily having trouble reaching the AI server. Abhishek is a Full Stack Developer (MERN, AWS, Micro-frontends) with 3.5+ years of experience. Feel free to contact him directly at gautamabhishek0810@gmail.com or via LinkedIn!",
+        sources: ['Quick Summary']
+      });
     }
 
     const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content || 'I could not generate a response at this time.';
+    const reply = data.choices?.[0]?.message?.content || 'Abhishek Gautam is a Full Stack Developer (MERN & AWS). For any queries, reach him directly at gautamabhishek0810@gmail.com.';
 
     return send(res, 200, {
       reply,
@@ -141,6 +147,9 @@ ${ragContext}`;
     });
   } catch (err) {
     console.error('Chat API error:', err);
-    return send(res, 500, { error: 'Something went wrong. Please try again.' });
+    return send(res, 200, {
+      reply: "I'm having temporary connection trouble. Abhishek is a Full Stack Developer (MERN, AWS, Micro-frontends). You can reach him directly at gautamabhishek0810@gmail.com or on LinkedIn!",
+      sources: ['Contact Info']
+    });
   }
 }
