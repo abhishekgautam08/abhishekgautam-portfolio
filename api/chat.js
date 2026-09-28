@@ -1,4 +1,6 @@
 import { retrieveRelevantContext, formatRAGContext } from './retriever.js';
+import { connectToDatabase } from './lib/db.js';
+import { extractVisitorMetadata } from './lib/geo.js';
 
 const NVIDIA_API_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
 const MODEL = 'meta/llama-3.2-11b-vision-instruct';
@@ -10,6 +12,59 @@ function send(res, status, data) {
     res.end(JSON.stringify(data));
   } else {
     res.end();
+  }
+}
+
+// Helper to save messages to MongoDB asynchronously
+async function saveMessageToDb({ sessionId, visitor, userMessage, assistantMessage }) {
+  try {
+    const { collections } = await connectToDatabase();
+    const { conversations } = collections;
+
+    const now = new Date();
+    const messagesToPush = [];
+    if (userMessage) {
+      messagesToPush.push({
+        id: 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        role: 'user',
+        content: userMessage,
+        timestamp: now
+      });
+    }
+    if (assistantMessage) {
+      messagesToPush.push({
+        id: 'msg_' + (Date.now() + 1) + '_' + Math.random().toString(36).substr(2, 4),
+        role: 'assistant',
+        content: assistantMessage.content,
+        sources: assistantMessage.sources || [],
+        timestamp: new Date()
+      });
+    }
+
+    if (messagesToPush.length === 0) return;
+
+    await conversations.updateOne(
+      { sessionId },
+      {
+        $setOnInsert: {
+          sessionId,
+          firstActive: now,
+        },
+        $set: {
+          visitor,
+          lastActive: new Date()
+        },
+        $push: {
+          messages: { $each: messagesToPush }
+        },
+        $inc: {
+          messageCount: messagesToPush.length
+        }
+      },
+      { upsert: true }
+    );
+  } catch (err) {
+    console.error('[DB] Failed to persist chat log to MongoDB:', err.message);
   }
 }
 
@@ -25,10 +80,19 @@ export default async function handler(req, res) {
   if (!apiKey) return send(res, 500, { error: 'NVIDIA_API_KEY not configured' });
 
   try {
-    const { messages, stream = false } = req.body;
+    const {
+      messages,
+      stream = false,
+      sessionId: clientSessionId,
+      clientInfo = {}
+    } = req.body || {};
+
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return send(res, 400, { error: 'messages array required' });
     }
+
+    const sessionId = clientSessionId || 'anon_' + Date.now();
+    const visitor = extractVisitorMetadata(req, clientInfo);
 
     // Extract the latest user query
     const lastUserMessage = [...messages].reverse().find(m => m.role === 'user');
@@ -47,6 +111,15 @@ export default async function handler(req, res) {
 
     if ((isGenericCodingRequest || isGeneralOffTopic) && !isAskingAboutAbhishekSpecifically) {
       const refusalMsg = "I am Abhishek Gautam's personal AI representative, not a general-purpose coding assistant. I cannot write code snippets, tutorials, or scripts for external work. I'm here specifically to answer questions about Abhishek's engineering background, architectural designs, work history, and portfolio projects. Feel free to ask about his work or reach out at gautamabhishek0810@gmail.com!";
+      
+      // Save query and refusal to DB
+      await saveMessageToDb({
+        sessionId,
+        visitor,
+        userMessage: userQuery,
+        assistantMessage: { content: refusalMsg, sources: ['Guardrails Refusal'] }
+      });
+
       if (stream) {
         res.writeHead(200, {
           'Content-Type': 'text/event-stream',
@@ -113,25 +186,53 @@ ${ragContext}`;
       });
 
       if (!response.ok) {
-        const errText = await response.text();
-        console.error('NVIDIA stream API error:', errText);
         const fallbackMsg = "I'm temporarily having trouble reaching the AI service. Abhishek is a Full Stack Developer (MERN, AWS, Micro-frontends) with 3.5+ years of experience. Feel free to contact him directly at gautamabhishek0810@gmail.com or via LinkedIn!";
         res.write(`data: ${JSON.stringify({ choices: [{ delta: { content: fallbackMsg } }] })}\n\n`);
         res.write('data: [DONE]\n\n');
         res.end();
+
+        saveMessageToDb({
+          sessionId,
+          visitor,
+          userMessage: userQuery,
+          assistantMessage: { content: fallbackMsg, sources: ['Fallback'] }
+        });
         return;
       }
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
+      let fullAssistantReply = '';
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         const chunk = decoder.decode(value);
         res.write(chunk);
+
+        // Parse chunks to accumulate reply for MongoDB storage
+        const lines = chunk.split('\n');
+        for (const line of lines) {
+          if (line.startsWith('data: ') && line.trim() !== 'data: [DONE]') {
+            try {
+              const parsed = JSON.parse(line.slice(6));
+              const delta = parsed.choices?.[0]?.delta?.content || '';
+              fullAssistantReply += delta;
+            } catch {
+              // ignore partial line parsing
+            }
+          }
+        }
       }
       res.end();
+
+      // Persist completed conversation stream to MongoDB in background
+      saveMessageToDb({
+        sessionId,
+        visitor,
+        userMessage: userQuery,
+        assistantMessage: { content: fullAssistantReply, sources: sourceTitles }
+      });
       return;
     }
 
@@ -152,16 +253,31 @@ ${ragContext}`;
     });
 
     if (!response.ok) {
-      const err = await response.text();
-      console.error('NVIDIA API error:', err);
+      const fallbackReply = "I'm temporarily having trouble reaching the AI server. Abhishek is a Full Stack Developer (MERN, AWS, Micro-frontends) with 3.5+ years of experience. Feel free to contact him directly at gautamabhishek0810@gmail.com or via LinkedIn!";
+      
+      saveMessageToDb({
+        sessionId,
+        visitor,
+        userMessage: userQuery,
+        assistantMessage: { content: fallbackReply, sources: ['Quick Summary'] }
+      });
+
       return send(res, 200, {
-        reply: "I'm temporarily having trouble reaching the AI server. Abhishek is a Full Stack Developer (MERN, AWS, Micro-frontends) with 3.5+ years of experience. Feel free to contact him directly at gautamabhishek0810@gmail.com or via LinkedIn!",
+        reply: fallbackReply,
         sources: ['Quick Summary']
       });
     }
 
     const data = await response.json();
     const reply = data.choices?.[0]?.message?.content || 'Abhishek Gautam is a Full Stack Developer (MERN & AWS). For any queries, reach him directly at gautamabhishek0810@gmail.com.';
+
+    // Save to MongoDB
+    saveMessageToDb({
+      sessionId,
+      visitor,
+      userMessage: userQuery,
+      assistantMessage: { content: reply, sources: sourceTitles }
+    });
 
     return send(res, 200, {
       reply,

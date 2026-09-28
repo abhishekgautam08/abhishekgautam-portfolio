@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiMessageCircle, FiX, FiSend, FiUser, FiCpu, FiBookOpen } from 'react-icons/fi'
+import { FiMessageCircle, FiX, FiSend, FiUser, FiCpu, FiBookOpen, FiUserCheck } from 'react-icons/fi'
 
 const INITIAL_MESSAGE = {
   role: 'assistant',
@@ -15,6 +15,46 @@ const SUGGESTED_PROMPTS = [
   'What did you build at Vigorus Healthtech?',
   'What certifications do you hold?',
 ]
+
+function getOrCreateSessionId() {
+  let id = localStorage.getItem('ag_chat_session_id')
+  if (!id) {
+    id = 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9)
+    localStorage.setItem('ag_chat_session_id', id)
+  }
+  return id
+}
+
+function getClientDetails() {
+  const ua = navigator.userAgent || ''
+  let os = 'Unknown OS'
+  let browser = 'Unknown Browser'
+  let device = 'Desktop'
+
+  if (/Mobile|Android|iPhone|iPod|BlackBerry/i.test(ua)) device = 'Mobile'
+  else if (/iPad|Tablet/i.test(ua)) device = 'Tablet'
+
+  if (/Windows/i.test(ua)) os = 'Windows'
+  else if (/Macintosh|Mac OS/i.test(ua)) os = 'macOS'
+  else if (/Android/i.test(ua)) os = 'Android'
+  else if (/iPhone|iPad/i.test(ua)) os = 'iOS'
+  else if (/Linux/i.test(ua)) os = 'Linux'
+
+  if (/Edg\//i.test(ua)) browser = 'Edge'
+  else if (/Chrome\//i.test(ua)) browser = 'Chrome'
+  else if (/Safari\//i.test(ua)) browser = 'Safari'
+  else if (/Firefox\//i.test(ua)) browser = 'Firefox'
+
+  return {
+    os,
+    browser,
+    device,
+    screenResolution: `${window.screen?.width || 0}x${window.screen?.height || 0}`,
+    language: navigator.language || 'en',
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+    referrer: document.referrer || 'Direct'
+  }
+}
 
 function TypingIndicator() {
   return (
@@ -82,6 +122,11 @@ export default function ChatWidget() {
   const [messages, setMessages] = useState([INITIAL_MESSAGE])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [showIdentityForm, setShowIdentityForm] = useState(false)
+  const [visitorName, setVisitorName] = useState(() => localStorage.getItem('ag_visitor_name') || '')
+  const [visitorEmail, setVisitorEmail] = useState(() => localStorage.getItem('ag_visitor_email') || '')
+  const [identitySaved, setIdentitySaved] = useState(() => !!localStorage.getItem('ag_visitor_name'))
+
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
 
@@ -93,6 +138,14 @@ export default function ChatWidget() {
     if (isOpen) inputRef.current?.focus()
   }, [isOpen])
 
+  function handleSaveIdentity(e) {
+    e.preventDefault()
+    if (visitorName.trim()) localStorage.setItem('ag_visitor_name', visitorName.trim())
+    if (visitorEmail.trim()) localStorage.setItem('ag_visitor_email', visitorEmail.trim())
+    setIdentitySaved(true)
+    setShowIdentityForm(false)
+  }
+
   async function sendMessage(textToSend) {
     const text = (typeof textToSend === 'string' ? textToSend : input).trim()
     if (!text || isLoading) return
@@ -103,6 +156,13 @@ export default function ChatWidget() {
     setInput('')
     setIsLoading(true)
 
+    const sessionId = getOrCreateSessionId()
+    const clientInfo = {
+      ...getClientDetails(),
+      name: visitorName || localStorage.getItem('ag_visitor_name') || undefined,
+      email: visitorEmail || localStorage.getItem('ag_visitor_email') || undefined
+    }
+
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -110,6 +170,8 @@ export default function ChatWidget() {
         body: JSON.stringify({
           messages: nextMessages.filter((m) => m.role !== 'system'),
           stream: true,
+          sessionId,
+          clientInfo
         }),
       })
 
@@ -204,21 +266,82 @@ export default function ChatWidget() {
             style={{ maxHeight: '520px', background: 'rgba(10,10,26,0.95)', backdropFilter: 'blur(20px)' }}
           >
             {/* Header */}
-            <div className="px-4 py-3 border-b border-white/10 flex items-center gap-3 bg-gradient-to-r from-primary/20 to-secondary/10">
-              <div className="w-8 h-8 rounded-full bg-primary/30 border border-primary/40 flex items-center justify-center">
-                <FiCpu className="text-primary text-sm" />
+            <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between bg-gradient-to-r from-primary/20 to-secondary/10">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-full bg-primary/30 border border-primary/40 flex items-center justify-center flex-shrink-0">
+                  <FiCpu className="text-primary text-sm" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-white text-sm font-semibold leading-none truncate">Abhishek's AI Agent</p>
+                  <p className="text-primary text-[11px] mt-0.5 font-medium truncate">Meta LLaMA & RAG · Online</p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-white text-sm font-semibold leading-none">Abhishek's AI Representative</p>
-                <p className="text-primary text-xs mt-0.5 font-medium">Powered by Meta LLaMA & RAG · Online</p>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setShowIdentityForm(!showIdentityForm)}
+                  title={identitySaved ? `Identified as: ${visitorName || visitorEmail}` : "Leave your name or email for Abhishek"}
+                  className={`p-1.5 rounded-lg border transition-all ${
+                    identitySaved
+                      ? 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10'
+                      : 'border-white/10 text-gray-400 hover:text-white hover:border-primary/40'
+                  }`}
+                >
+                  <FiUserCheck size={14} />
+                </button>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="text-gray-400 hover:text-white transition-colors p-1"
+                >
+                  <FiX size={16} />
+                </button>
               </div>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="text-gray-400 hover:text-white transition-colors p-1"
-              >
-                <FiX size={16} />
-              </button>
             </div>
+
+            {/* Optional Identity Sub-panel */}
+            <AnimatePresence>
+              {showIdentityForm && (
+                <motion.form
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  onSubmit={handleSaveIdentity}
+                  className="px-4 py-2.5 bg-dark-300/80 border-b border-white/10 flex flex-col gap-2 overflow-hidden text-xs"
+                >
+                  <p className="text-gray-300 font-medium">Recruiter / Visitor Info (Optional):</p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Your Name"
+                      value={visitorName}
+                      onChange={(e) => setVisitorName(e.target.value)}
+                      className="flex-1 px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:border-primary outline-none"
+                    />
+                    <input
+                      type="email"
+                      placeholder="Your Email"
+                      value={visitorEmail}
+                      onChange={(e) => setVisitorEmail(e.target.value)}
+                      className="flex-1 px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/10 text-white placeholder-gray-500 focus:border-primary outline-none"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2 mt-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setShowIdentityForm(false)}
+                      className="text-gray-400 hover:text-white px-2 py-1"
+                    >
+                      Close
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-3 py-1 rounded bg-primary text-white font-medium hover:bg-primary/90"
+                    >
+                      Save Info
+                    </button>
+                  </div>
+                </motion.form>
+              )}
+            </AnimatePresence>
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-3 min-h-0">
@@ -289,7 +412,6 @@ export default function ChatWidget() {
             </motion.span>
           )}
         </AnimatePresence>
-        {/* Notification dot */}
         {!isOpen && (
           <span className="absolute top-1 right-1 w-3 h-3 bg-secondary rounded-full border-2 border-dark-400 animate-pulse" />
         )}
